@@ -6,6 +6,12 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
+// OLED podłączony do Wemos D1 Mini:
+// - SDA: D2 (GPIO 4)
+// - SCL: D1 (GPIO 5)
+// - VCC: 3.3V lub 5V (zależnie od modułu OLED)
+// - GND: GND
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // Placeholder for full-screen 128x64 bitmap logo
@@ -32,9 +38,10 @@ WiFiInfo networks[6];  // Tablica na maksymalnie 6 sieci (pasuje do ekranu 128x6
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  
+  Serial.println("Inicjalizacja...");
+
   // Inicjalizacja OLED
-  Wire.begin(D2, D1);  // Twoje piny I2C
+  Wire.begin(D2, D1);  // I2C: D2 (SDA), D1 (SCL)
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("❌ Błąd inicjalizacji OLED!");
     while (true);
@@ -44,37 +51,59 @@ void setup() {
   display.clearDisplay();
   display.drawBitmap(0, 0, wifi_logo, SCREEN_WIDTH, SCREEN_HEIGHT, SSD1306_WHITE);
   display.display();
+  Serial.println("Wyświetlono logo intro");
   delay(3000);  // Logo wyświetlane przez 3 sekundy
+
+  // Test wyświetlacza
   display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Test OLED");
+  display.display();
+  Serial.println("Wyświetlono komunikat testowy OLED");
+  delay(2000);  // Test widoczny przez 2 sekundy
+  display.clearDisplay();
+  display.display();
 
   // Inicjalizacja Wi-Fi
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
+  Serial.println("Wi-Fi zainicjalizowane");
 }
 
 void scanAndDisplay() {
   display.clearDisplay();
-  
-  // Skanowanie sieci Wi-Fi
-  Serial.println("Skanowanie dostępnych sieci Wi-Fi...");
-  int networksFound = WiFi.scanNetworks();
+  Serial.println("Rozpoczynanie skanowania sieci Wi-Fi...");
 
-  if (networksFound == 0) {
-    Serial.println("❌ Brak sieci Wi-Fi w pobliżu");
+  // Skanowanie sieci Wi-Fi
+  int networksFound = WiFi.scanNetworks();
+  Serial.print("Znaleziono sieci: ");
+  Serial.println(networksFound);
+
+  if (networksFound <= 0) {
+    Serial.println("❌ Brak sieci Wi-Fi w pobliżu lub błąd skanowania");
     display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
     display.println("Brak sieci Wi-Fi");
     display.display();
+    Serial.println("Wyświetlono komunikat o braku sieci");
   } else {
     // Zapisujemy sieci
     for (int i = 0; i < networksFound && i < 6; i++) {
-      String ssid = WiFi.SSID(i);
-      int rssi = WiFi.RSSI(i);
-      float distance = rssiToDistance(rssi);
-
-      networks[i].ssid = ssid;
-      networks[i].rssi = rssi;
-      networks[i].distance = distance;
+      networks[i].ssid = WiFi.SSID(i);
+      networks[i].rssi = WiFi.RSSI(i);
+      networks[i].distance = rssiToDistance(networks[i].rssi);
+      Serial.print("Sieć ");
+      Serial.print(i);
+      Serial.print(": ");
+      Serial.print(networks[i].ssid);
+      Serial.print(", RSSI: ");
+      Serial.print(networks[i].rssi);
+      Serial.print(", Odległość: ");
+      Serial.print(networks[i].distance, 1);
+      Serial.println("m");
     }
 
     // Sortowanie sieci po odległości
@@ -90,17 +119,23 @@ void scanAndDisplay() {
 
     // Wyświetlanie wyników
     display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
-
-    // Wyświetlamy każdą sieć w jednej linijce
     for (int i = 0; i < networksFound && i < 6; i++) {
       display.setCursor(0, i * 10);
-      display.print(networks[i].ssid);
+      // Ograniczamy SSID do 12 znaków, aby zmieścić się na ekranie
+      String displaySSID = networks[i].ssid.substring(0, 12);
+      display.print(displaySSID);
       display.print(" ");
       display.print(networks[i].distance, 1);
       display.println("m");
+      Serial.print("Wyświetlam sieć ");
+      Serial.print(i);
+      Serial.print(": ");
+      Serial.println(displaySSID);
     }
     display.display();
+    Serial.println("Wyświetlono listę sieci");
   }
 }
 
