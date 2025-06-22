@@ -35,9 +35,9 @@ SDA → D2 (GPIO 4)
 2. Open the project in Arduino IDE or PlatformIO.
 3. Connect your ESP8266 board to your computer.
    Needed libraries:
-    -ESP8266WiFi
-    -Wire (for I2C communication)
-    -Adafruit_GFX and Adafruit_SSD1306 (for OLED display)
+-ESP8266WiFi
+-Wire (for I2C communication)
+-Adafruit_GFX and Adafruit_SSD1306 (for OLED display)
 4. Upload the code to the board using the IDE.
 
 ## License && Contributing
