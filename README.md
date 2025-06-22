@@ -20,12 +20,13 @@ WiFiRadar Scan Results:
 ## Hardware Connections
 Connect the SDA and SCL pins accordingly to Your board
 In my example it is Wemos D1 Mini
-
+```
 Display - Board
 VCC → 3.3V
 GND → GND
 SCL → D1 (GPIO 5)
 SDA → D2 (GPIO 4)
+```
 
 ## Installation
 1. Clone this repository:
@@ -34,10 +35,13 @@ SDA → D2 (GPIO 4)
    ```
 2. Open the project in Arduino IDE or PlatformIO.
 3. Connect your ESP8266 board to your computer.
-   Needed libraries:
--ESP8266WiFi
--Wire (for I2C communication)
--Adafruit_GFX and Adafruit_SSD1306 (for OLED display)
+   Needed libraries: 
+   ```
+   -ESP8266WiFi,
+   -Wire (for I2C communication)
+   -Adafruit_GFX and Adafruit_SSD1306 (for OLED display)
+   ```
+   
 4. Upload the code to the board using the IDE.
 
 ## License && Contributing
